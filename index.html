@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Patatap</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #fff;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="visualizer"></canvas>
+  <script>
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const allKeys = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+    // GitHub Pages-friendly base URL
+    const baseURL = 'https://tylersmithworld.github.io/808/';
+    const filenames = [
+      '808-kick.mp3',
+      '808-snare.mp3',
+      '808-hihat.mp3',
+      '808-clap.mp3',
+      '808-cowbell.mp3',
+      '808-tom.mp3',
+      '808-rim.mp3',
+      '808-openhat.mp3',
+      '808-crash.mp3',
+      '808-ride.mp3',
+      '808-conga.mp3',
+      '808-bongo.mp3'
+    ];
+
+    const soundURLs = allKeys.map((_, index) => `${baseURL}${filenames[index % filenames.length]}`);
+
+    const sounds = {};
+    allKeys.forEach((key, index) => {
+      const audio = new Audio(soundURLs[index]);
+      audio.preload = 'auto';
+      sounds[key] = audio;
+    });
+
+    const keyShapes = {};
+    let flashOpacity = 0;
+
+    function getPleasantColor(index) {
+      const designerPalette = [
+        '#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#843B62', '#FF9F1C',
+        '#B388EB', '#F67280', '#36C9C6', '#F8C291', '#7FDBDA', '#A29BFE'
+      ];
+      return designerPalette[index % designerPalette.length];
+    }
+
+    function getRandomShapeType() {
+      const types = ['circle', 'square', 'triangle', 'ring'];
+      return types[Math.floor(Math.random() * types.length)];
+    }
+
+    function drawShape(shape) {
+      ctx.fillStyle = shape.color;
+      ctx.strokeStyle = shape.color;
+
+      switch (shape.type) {
+        case 'circle':
+          ctx.beginPath();
+          ctx.arc(shape.x, shape.y, shape.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case 'square':
+          ctx.fillRect(shape.x - shape.size / 2, shape.y - shape.size / 2, shape.size, shape.size);
+          break;
+        case 'triangle':
+          ctx.beginPath();
+          ctx.moveTo(shape.x, shape.y - shape.size / 2);
+          ctx.lineTo(shape.x - shape.size / 2, shape.y + shape.size / 2);
+          ctx.lineTo(shape.x + shape.size / 2, shape.y + shape.size / 2);
+          ctx.closePath();
+          ctx.fill();
+          break;
+        case 'ring':
+          ctx.beginPath();
+          ctx.arc(shape.x, shape.y, shape.size / 2, 0, Math.PI * 2);
+          ctx.lineWidth = 4;
+          ctx.stroke();
+          break;
+      }
+    }
+
+    function playSoundAndAnimate(key) {
+      const sound = sounds[key];
+      if (!sound) return;
+      sound.currentTime = 0;
+      sound.play().catch(e => console.warn(`Sound play failed: ${e.message}`));
+
+      const angle = (allKeys.indexOf(key) / allKeys.length) * 2 * Math.PI;
+      const radius = Math.min(canvas.width, canvas.height) * 0.3;
+      const cx = canvas.width / 2 + radius * Math.cos(angle);
+      const cy = canvas.height / 2 + radius * Math.sin(angle);
+      const color = getPleasantColor(allKeys.indexOf(key));
+      const type = getRandomShapeType();
+
+      const shape = {
+        x: cx,
+        y: cy,
+        color,
+        type,
+        size: 30 + Math.random() * 70,
+        life: 60
+      };
+
+      keyShapes[key] = shape;
+      flashOpacity = 0.15;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (flashOpacity > 0) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${flashOpacity})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        flashOpacity -= 0.02;
+      }
+
+      for (const key in keyShapes) {
+        const shape = keyShapes[key];
+        drawShape(shape);
+        shape.life--;
+        if (shape.life <= 0) {
+          delete keyShapes[key];
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      if (allKeys.includes(key)) {
+        playSoundAndAnimate(key);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>

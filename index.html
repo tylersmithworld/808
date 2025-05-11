@@ -26,21 +26,33 @@
 
     const allKeys = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-    // GitHub Pages-friendly base URL
     const baseURL = 'https://tylersmithworld.github.io/808/';
     const filenames = [
-      '808-kick.mp3',
-      '808-snare.mp3',
-      '808-hihat.mp3',
-      '808-clap.mp3',
-      '808-cowbell.mp3',
-      '808-tom.mp3',
-      '808-rim.mp3',
-      '808-openhat.mp3',
-      '808-crash.mp3',
-      '808-ride.mp3',
-      '808-conga.mp3',
-      '808-bongo.mp3'
+      'Cassette%20%5B2025-03-04%20171032%5D.wav',
+      'Cow%20Bell%201%20-%20Depalma%20Cassette%20808s.wav',
+      'Cow%20Bell%2011%20-%20Depalma%20Cassette%20808s.wav',
+      'Cow%20Bell%2019%20-%20Depalma%20Cassette%20808s.wav',
+      'Cow%20Bell%205%20-%20Depalma%20Cassette%20808s.wav',
+      'DEEP%20FOG%20%5B2025-03-04%20171027%5D.wav',
+      'Hi%20Hat%202%20-%20Depalma%20Cassette%20808s.wav',
+      'Hi%20Hat%2025%20-%20Depalma%20Cassette%20808s.wav',
+      'Hi%20Hat%204%20-%20Depalma%20Cassette%20808s.wav',
+      'Open%20Hi%20Hat%2013%20-%20Depalma%20Cassette%20808s.wav',
+      'Open%20Hi%20Hat%203%20-%20Depalma%20Cassette%20808s.wav',
+      'Open%20Hi%20Hat%207%20-%20Depalma%20Cassette%20808s.wav',
+      'ROYAL%20FLUSH%20%5B2025-03-04%20171026%5D.wav',
+      'Rim%204%20-%20Depalma%20Cassette%20808s.wav',
+      'Rim%205%20-%20Depalma%20Cassette%20808s.wav',
+      'SNEAKY%20PETE%20%5B2025-03-04%20171030%5D.wav',
+      'Snare%2018%20-%20Depalma%20Cassette%20808s.wav',
+      'Snare%2024%20-%20Depalma%20Cassette%20808s.wav',
+      'Snare%2037%20-%20Depalma%20Cassette%20808s.wav',
+      'Snare%204%20-%20Depalma%20Cassette%20808s.wav',
+      'THE%20WIDOWMAKER%20%5B2025-03-04%20171028%5D.wav',
+      'TIC-TAC%20%5B2025-03-04%20171029%5D.wav',
+      'Tom-Conga%2028%20-%20Depalma%20Cassette%20808s.wav',
+      'Tom-Conga%2030%20-%20Depalma%20Cassette%20808s.wav',
+      'Tom-Conga%205%20-%20Depalma%20Cassette%20808s.wav'
     ];
 
     const soundURLs = allKeys.map((_, index) => `${baseURL}${filenames[index % filenames.length]}`);
@@ -52,50 +64,51 @@
       sounds[key] = audio;
     });
 
-    const keyShapes = {};
+    const activeShapes = [];
     let flashOpacity = 0;
 
     function getPleasantColor(index) {
-      const designerPalette = [
-        '#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#843B62', '#FF9F1C',
-        '#B388EB', '#F67280', '#36C9C6', '#F8C291', '#7FDBDA', '#A29BFE'
-      ];
-      return designerPalette[index % designerPalette.length];
+      const palette = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#843B62', '#FF9F1C', '#B388EB', '#F67280', '#36C9C6', '#F8C291', '#7FDBDA', '#A29BFE'];
+      return palette[index % palette.length];
     }
 
     function getRandomShapeType() {
-      const types = ['circle', 'square', 'triangle', 'ring'];
-      return types[Math.floor(Math.random() * types.length)];
+      return ['circle', 'square', 'triangle', 'ring'][Math.floor(Math.random() * 4)];
     }
 
     function drawShape(shape) {
+      ctx.save();
+      ctx.translate(shape.x, shape.y);
+      ctx.rotate(shape.rotation);
+      ctx.globalAlpha = shape.alpha;
       ctx.fillStyle = shape.color;
       ctx.strokeStyle = shape.color;
 
       switch (shape.type) {
         case 'circle':
           ctx.beginPath();
-          ctx.arc(shape.x, shape.y, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
           ctx.fill();
           break;
         case 'square':
-          ctx.fillRect(shape.x - shape.size / 2, shape.y - shape.size / 2, shape.size, shape.size);
+          ctx.fillRect(-shape.size / 2, -shape.size / 2, shape.size, shape.size);
           break;
         case 'triangle':
           ctx.beginPath();
-          ctx.moveTo(shape.x, shape.y - shape.size / 2);
-          ctx.lineTo(shape.x - shape.size / 2, shape.y + shape.size / 2);
-          ctx.lineTo(shape.x + shape.size / 2, shape.y + shape.size / 2);
+          ctx.moveTo(0, -shape.size / 2);
+          ctx.lineTo(-shape.size / 2, shape.size / 2);
+          ctx.lineTo(shape.size / 2, shape.size / 2);
           ctx.closePath();
           ctx.fill();
           break;
         case 'ring':
           ctx.beginPath();
-          ctx.arc(shape.x, shape.y, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
           ctx.lineWidth = 4;
           ctx.stroke();
           break;
       }
+      ctx.restore();
     }
 
     function playSoundAndAnimate(key) {
@@ -108,38 +121,36 @@
       const radius = Math.min(canvas.width, canvas.height) * 0.3;
       const cx = canvas.width / 2 + radius * Math.cos(angle);
       const cy = canvas.height / 2 + radius * Math.sin(angle);
-      const color = getPleasantColor(allKeys.indexOf(key));
-      const type = getRandomShapeType();
 
-      const shape = {
+      activeShapes.push({
         x: cx,
         y: cy,
-        color,
-        type,
-        size: 30 + Math.random() * 70,
-        life: 60
-      };
+        color: getPleasantColor(allKeys.indexOf(key)),
+        type: getRandomShapeType(),
+        size: 30 + Math.random() * 50,
+        alpha: 1,
+        rotation: Math.random() * 2 * Math.PI,
+        decay: 0.02
+      });
 
-      keyShapes[key] = shape;
-      flashOpacity = 0.15;
+      flashOpacity = 0.1;
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (flashOpacity > 0) {
-        ctx.fillStyle = `rgba(0, 0, 0, ${flashOpacity})`;
+        ctx.fillStyle = `rgba(0,0,0,${flashOpacity})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        flashOpacity -= 0.02;
+        flashOpacity -= 0.01;
       }
 
-      for (const key in keyShapes) {
-        const shape = keyShapes[key];
-        drawShape(shape);
-        shape.life--;
-        if (shape.life <= 0) {
-          delete keyShapes[key];
-        }
+      for (let i = activeShapes.length - 1; i >= 0; i--) {
+        const s = activeShapes[i];
+        drawShape(s);
+        s.alpha -= s.decay;
+        s.size += 0.5;
+        if (s.alpha <= 0) activeShapes.splice(i, 1);
       }
 
       requestAnimationFrame(draw);
@@ -149,9 +160,7 @@
 
     window.addEventListener('keydown', e => {
       const key = e.key.toLowerCase();
-      if (allKeys.includes(key)) {
-        playSoundAndAnimate(key);
-      }
+      if (allKeys.includes(key)) playSoundAndAnimate(key);
     });
 
     window.addEventListener('resize', () => {

@@ -133,21 +133,11 @@ function drawLabel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.globalAlpha = 0.1;
-  ctx.fillStyle = 'rgba(200,200,200,1)'; // 30% brighter gray
+  ctx.fillStyle = 'rgba(255,255,255,1)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-
-  const isLandscape = window.innerWidth > window.innerHeight;
-  if (isLandscape) {
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.font = `${Math.floor(canvas.width * 0.7)}px 'Bebas Neue', sans-serif`;
-    ctx.fillText(isReady ? '808' : 'Loading...', 0, 0);
-  } else {
-    ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
-    ctx.fillText(isReady ? '808' : 'Loading...', canvas.width / 2, canvas.height / 2);
-  }
-
+  ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
+  ctx.fillText(isReady ? '808' : 'Loading...', canvas.width/2, canvas.height/2);
   ctx.restore();
 
   if (displayText) {

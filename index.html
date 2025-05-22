@@ -1,28 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drum Visualizer - Minimal Mobile</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" crossorigin="anonymous">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #000;
-      touch-action: none;
-      font-family: 'Bebas Neue', sans-serif;
-    }
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
-</head>
-<body>
-<canvas id="visualizer"></canvas>
 <script>
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
@@ -41,8 +16,8 @@ const soundMap = {
   y: 'tom.mp3', z: '808_90.mp3'
 };
 
-const preloadKeys = ['a', 'c', 'g', 'q'];
 const keys = Object.keys(soundMap);
+const preloadKeys = [...keys];
 
 let currentIndex = 0;
 let displayText = '';
@@ -72,7 +47,11 @@ async function loadAudioBuffer(key) {
 
 async function preloadEssentialSounds() {
   for (const key of preloadKeys) {
-    await loadAudioBuffer(key);
+    try {
+      await loadAudioBuffer(key);
+    } catch (e) {
+      console.warn(`Failed to load sound for key "${key}":`, e);
+    }
   }
   isReady = true;
 }
@@ -89,12 +68,13 @@ function playSound(key) {
 
 function getTypeAndColor(key) {
   const labelMap = {
-    a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'SNARE', f: 'SNARE',
-    g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'CYMBAL', m: 'COWBELL',
-    n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE', s: 'KICK',
-    t: 'CLAP', u: 'COWBELL', v: 'SNARE', w: 'KICK', x: 'KICK', y: 'TOM', z: 'KICK'
+    a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'KICK', f: 'SNARE',
+    g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'CYMBAL',
+    m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE',
+    s: 'KICK', t: 'CLAP', u: 'COWBELL', v: 'SNARE', w: 'KICK', x: 'KICK',
+    y: 'TOM', z: 'KICK'
   };
-  const label = labelMap[key] || 'RIM';
+  const label = labelMap[key] || 'SOUND';
   const col = colorCycle[colorIndex % colorCycle.length];
   colorIndex++;
   return [label, col];
@@ -198,5 +178,3 @@ function animate() {
 
 preloadEssentialSounds().then(animate);
 </script>
-</body>
-</html>

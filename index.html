@@ -185,21 +185,18 @@ canvas.addEventListener('touchstart', async e => {
   if (!firstInteractionOccurred && isReady) {
     firstInteractionOccurred = true;
     await audioCtx.resume();
-    // Only play one sound clearly, no overlap
-    setTimeout(() => {
-      playNextSound();
-    }, 100); // slight delay helps avoid double-trigger effect
     hideInstruction();
-  } else {
-    const key = keys[currentIndex];
-    const [txt, col] = getTypeAndColor(key);
-    displayText = txt;
-    color = col;
-    opacity = 1;
-    playSound(key);
-    startFadeOut();
-    currentIndex = (currentIndex + 1) % keys.length;
+    // continue to play first sound
   }
+  }
+  const key = keys[currentIndex];
+  const [txt, col] = getTypeAndColor(key);
+  displayText = txt;
+  color = col;
+  opacity = 1;
+  playSound(key);
+  startFadeOut();
+  currentIndex = (currentIndex + 1) % keys.length;
 });
 
 window.addEventListener('keydown', e => {

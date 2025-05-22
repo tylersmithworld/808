@@ -182,13 +182,15 @@ function playNextSound() {
 canvas.addEventListener('touchstart', async e => {
   e.preventDefault();
   resetInactivityTimer();
+
   if (!firstInteractionOccurred && isReady) {
     firstInteractionOccurred = true;
     await audioCtx.resume();
     hideInstruction();
-    // continue to play first sound
   }
-  }
+
+  if (!isReady) return;
+
   const key = keys[currentIndex];
   const [txt, col] = getTypeAndColor(key);
   displayText = txt;
@@ -288,7 +290,7 @@ function resetInactivityTimer() {
         showInstruction();
       }
     }, 100);
-  }, 6000); // 6-second delay
+  }, 6000);
 }
 
 window.addEventListener('keydown', resetInactivityTimer);
@@ -304,7 +306,7 @@ preloadEssentialSounds().then(() => {
       el.style.opacity = 1;
     }
   } else if (!firstDesktopKeydown && !isMobile) {
-    setTimeout(showInstruction, 6000); // also add this to match the delay
+    setTimeout(showInstruction, 6000);
   }
 });
 </script>

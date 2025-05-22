@@ -38,19 +38,20 @@
     #promo {
       position: fixed;
       bottom: 10px;
-      right: 10px;
+      left: 50%;
+      transform: translateX(-50%);
       text-decoration: none;
       font-family: 'Bebas Neue', sans-serif;
       color: white;
-      text-align: right;
+      text-align: center;
       z-index: 10;
     }
     #promo img {
       width: 60px;
       height: auto;
-      display: block;
       border-radius: 4px;
-      margin-bottom: 4px;
+      display: block;
+      margin: 0 auto 4px auto;
     }
     #promo div {
       font-size: 14px;
@@ -61,10 +62,10 @@
 
 <canvas id="visualizer"></canvas>
 
-<!-- Instruction message -->
-<div id="instruction">Tap (mobile) or Type (desktop)</div>
+<!-- Instruction (displays Tap or Type) -->
+<div id="instruction"></div>
 
-<!-- Cassette Tape 808s promo -->
+<!-- Promo link and image centered -->
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette Tape 808s" />
   <div>Cassette Tape 808s</div>
@@ -252,12 +253,12 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// Fade out instruction message
+// Show correct instruction then fade
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    const inst = document.getElementById('instruction');
-    if (inst) inst.style.opacity = 0;
-  }, 2000);
+  const inst = document.getElementById('instruction');
+  const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  inst.textContent = isMobile ? 'Tap' : 'Type';
+  setTimeout(() => inst.style.opacity = 0, 2000);
 });
 
 preloadEssentialSounds().then(animate);

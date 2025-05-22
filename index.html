@@ -150,12 +150,12 @@ function playSound(key) {
 
 function getTypeAndColor(key) {
   const labelMap = {
-    a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
-    g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
-    m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE',
-    s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'KICK', x: 'KICK',
-    y: 'TOM', z: 'BOOM'
-  };
+  a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
+  g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
+  m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE',
+  s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'KICK', x: 'KICK',
+  y: 'TOM', z: 'BOOM'
+};
   const label = labelMap[key] || 'SOUND';
   const col = ['#ffffff', '#ff7700', '#ff0000'][Math.floor(Math.random() * 3)];
   return [label, col];
@@ -257,9 +257,7 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-preloadEssentialSounds().then(() => {
-  animate();
-});
+
 
 function showInstruction() {
   const el = document.getElementById('instruction');
@@ -275,15 +273,18 @@ let inactivityTimer;
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(() => {
-    showInstruction();
+    setTimeout(showInstruction, 100);
   }, 45000);
 }
 
 window.addEventListener('keydown', resetInactivityTimer);
 window.addEventListener('touchstart', resetInactivityTimer);
 
-// Show instruction once on load
-showInstruction();
+// Show instruction once after preload completes
+preloadEssentialSounds().then(() => {
+  animate();
+  showInstruction();
+});
 </script>
 </body>
 </html>

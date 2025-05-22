@@ -19,10 +19,56 @@
       width: 100vw;
       height: 100vh;
     }
+    #instruction {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 16px;
+      border-radius: 8px;
+      opacity: 1;
+      transition: opacity 1.5s ease 2.5s;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #promo {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      text-decoration: none;
+      font-family: 'Bebas Neue', sans-serif;
+      color: white;
+      text-align: right;
+      z-index: 10;
+    }
+    #promo img {
+      width: 60px;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    #promo div {
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
+
 <canvas id="visualizer"></canvas>
+
+<!-- Instruction message -->
+<div id="instruction">Tap (mobile) or Type (desktop)</div>
+
+<!-- Cassette Tape 808s promo -->
+<a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
+  <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette Tape 808s" />
+  <div>Cassette Tape 808s</div>
+</a>
 
 <script>
 window.onerror = function(msg, src, line, col, error) {
@@ -98,10 +144,10 @@ function playSound(key) {
 
 function getTypeAndColor(key) {
   const labelMap = {
-    a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
+    a: 'KICK', b: 'KICK', c: 'SNARE', d: 'SNARE', e: 'KICK', f: 'SNARE',
     g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'CYMBAL',
     m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE',
-    s: 'KICK', t: 'CLAP', u: 'COWBELL', v: 'SNARE', w: 'KICK', x: 'BOOM',
+    s: 'KICK', t: 'CLAP', u: 'COWBELL', v: 'SNARE', w: 'KICK', x: 'KICK',
     y: 'TOM', z: 'KICK'
   };
   const label = labelMap[key] || 'SOUND';
@@ -206,7 +252,16 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+// Fade out instruction message
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const inst = document.getElementById('instruction');
+    if (inst) inst.style.opacity = 0;
+  }, 2000);
+});
+
 preloadEssentialSounds().then(animate);
 </script>
+
 </body>
 </html>

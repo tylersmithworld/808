@@ -31,7 +31,7 @@
       padding: 8px 16px;
       border-radius: 6px;
       opacity: 1;
-      transition: opacity 1.5s ease 2.5s;
+      transition: opacity 1.5s ease;
       pointer-events: none;
       z-index: 5;
     }
@@ -61,8 +61,10 @@
 
 <canvas id="visualizer"></canvas>
 
-<div id="instruction">Loading...</div>
+<!-- Instruction -->
+<div id="instruction"></div>
 
+<!-- Cassette Tape 808s promo -->
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette Tape 808s" />
   <div>Cassette Tape 808s</div>
@@ -73,12 +75,35 @@ window.onerror = function(msg, src, line, col, error) {
   console.error("Uncaught error:", msg, "at", src + ":" + line);
 };
 
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const instructionEl = document.getElementById('instruction');
-instructionEl.textContent = isMobile ? 'TAP' : 'TYPE';
-setTimeout(() => {
-  instructionEl.style.opacity = 0;
-}, 2500);
+function showInstruction() {
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const instructionEl = document.getElementById('instruction');
+  if (instructionEl) {
+    instructionEl.textContent = isMobile ? 'TAP' : 'TYPE';
+    instructionEl.style.opacity = 1;
+    setTimeout(() => {
+      instructionEl.style.opacity = 0;
+    }, 2500);
+  }
+}
+
+let inactivityTimer;
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    showInstruction();
+  }, 45000); // 45 seconds
+}
+
+// Initial display
+window.addEventListener('load', () => {
+  showInstruction();
+  resetInactivityTimer();
+});
+
+// Reset on interaction
+window.addEventListener('keydown', resetInactivityTimer);
+window.addEventListener('touchstart', resetInactivityTimer);
 
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');

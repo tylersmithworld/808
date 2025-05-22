@@ -103,7 +103,8 @@ const soundMap = {
 };
 
 const keys = Object.keys(soundMap);
-const preloadKeys = [...keys];
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+const preloadKeys = isMobile ? ['a', 'c', 'g', 'q'] : [...keys];
 
 let currentIndex = 0;
 let displayText = '';
@@ -137,13 +138,14 @@ async function preloadEssentialSounds() {
 }
 
 function playSound(key) {
-  loadAudioBuffer(key).then(buffer => {
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioCtx.destination);
-    source.start(0);
-    triggerPulse();
-  }).catch(e => console.error(`Error playing sound for key "${key}"`, e));
+  const buffer = audioBuffers[key];
+  if (!buffer) return;
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioCtx.destination);
+  source.start(0);
+  triggerPulse();
+}).catch(e => console.error(`Error playing sound for key "${key}"`, e));
 }
 
 function getTypeAndColor(key) {

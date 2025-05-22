@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>808 Drum Visualizer</title>
+  <title>808 Player</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     html, body {
@@ -139,12 +139,18 @@ async function preloadEssentialSounds() {
 }
 
 let currentSource = null;
+const lastSourceByKey = {};
 
 function playSound(key) {
   const buffer = audioBuffers[key];
   if (!buffer) return;
-  if (currentSource) currentSource.stop();
+
+  if (!isMobile && currentSource && currentSource !== lastSourceByKey[key]) {
+    currentSource.stop();
+  }
+
   const source = audioCtx.createBufferSource();
+  lastSourceByKey[key] = source;
   currentSource = source;
   source.buffer = buffer;
   source.connect(audioCtx.destination);
@@ -156,8 +162,8 @@ function getTypeAndColor(key) {
   const labelMap = {
   a: 'KICK', b: 'COWBELL', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
   g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
-  m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: '808', r: 'SNARE',
-  s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'BOOM', x: '808',
+  m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: 'KICK', r: 'SNARE',
+  s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'KICK', x: 'KICK',
   y: 'TOM', z: 'BOOM'
 };
   const label = labelMap[key] || 'SOUND';

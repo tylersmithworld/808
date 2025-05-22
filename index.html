@@ -25,11 +25,11 @@
       left: 50%;
       transform: translateX(-50%);
       color: white;
-      font-size: 22px;
       font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
       background: rgba(0,0,0,0.5);
-      padding: 8px 16px;
-      border-radius: 6px;
+      padding: 10px 16px;
+      border-radius: 8px;
       opacity: 1;
       transition: opacity 1.5s ease 2.5s;
       pointer-events: none;
@@ -38,19 +38,20 @@
     #promo {
       position: fixed;
       bottom: 10px;
-      right: 10px;
-      text-align: center;
+      left: 50%;
+      transform: translateX(-50%);
       text-decoration: none;
       font-family: 'Bebas Neue', sans-serif;
       color: white;
+      text-align: center;
       z-index: 10;
     }
     #promo img {
-      width: 70px;
+      width: 60px;
       height: auto;
+      border-radius: 4px;
       display: block;
       margin: 0 auto 4px auto;
-      border-radius: 4px;
     }
     #promo div {
       font-size: 14px;
@@ -61,8 +62,10 @@
 
 <canvas id="visualizer"></canvas>
 
-<div id="instruction">Loading...</div>
+<!-- Instruction (displays Tap or Type) -->
+<div id="instruction"></div>
 
+<!-- Promo link and image centered -->
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette Tape 808s" />
   <div>Cassette Tape 808s</div>
@@ -72,13 +75,6 @@
 window.onerror = function(msg, src, line, col, error) {
   console.error("Uncaught error:", msg, "at", src + ":" + line);
 };
-
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const instructionEl = document.getElementById('instruction');
-instructionEl.textContent = isMobile ? 'TAP' : 'TYPE';
-setTimeout(() => {
-  instructionEl.style.opacity = 0;
-}, 2500);
 
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
@@ -256,6 +252,14 @@ function animate() {
   drawLabel();
   requestAnimationFrame(animate);
 }
+
+// Show correct instruction then fade
+window.addEventListener('load', () => {
+  const inst = document.getElementById('instruction');
+  const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  inst.textContent = isMobile ? 'Tap' : 'Type';
+  setTimeout(() => inst.style.opacity = 0, 2000);
+});
 
 preloadEssentialSounds().then(animate);
 </script>

@@ -138,20 +138,10 @@ async function preloadEssentialSounds() {
   isReady = true;
 }
 
-let currentSource = null;
-const lastSourceByKey = {};
-
 function playSound(key) {
   const buffer = audioBuffers[key];
   if (!buffer) return;
-
-  if (!isMobile && currentSource && currentSource !== lastSourceByKey[key]) {
-    currentSource.stop();
-  }
-
   const source = audioCtx.createBufferSource();
-  lastSourceByKey[key] = source;
-  currentSource = source;
   source.buffer = buffer;
   source.connect(audioCtx.destination);
   source.start(0);
@@ -160,11 +150,15 @@ function playSound(key) {
 
 function getTypeAndColor(key) {
   const labelMap = {
-  a: 'KICK', b: 'COWBELL', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
-  g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
-  m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: '808', r: 'SNARE',
-  s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'BOOM', x: '808',
-  y: 'TOM', z: 'BOOM'
+    a: 'KICK', b: 'COWBELL', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
+    g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
+    m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: '808', r: 'SNARE',
+    s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'BOOM', x: '808',
+    y: 'TOM', z: 'BOOM'
+  };
+  const label = labelMap[key] || 'SOUND';
+  const col = ['#ffffff', '#ff7700', '#ff0000'][Math.floor(Math.random() * 3)];
+  return [label, col];
 };
   const label = labelMap[key] || 'SOUND';
   const col = ['#ffffff', '#ff7700', '#ff0000'][Math.floor(Math.random() * 3)];

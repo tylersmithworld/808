@@ -145,7 +145,6 @@ function playSound(key) {
   source.connect(audioCtx.destination);
   source.start(0);
   triggerPulse();
-}).catch(e => console.error(`Error playing sound for key "${key}"`, e));
 }
 
 function getTypeAndColor(key) {

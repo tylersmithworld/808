@@ -77,6 +77,14 @@ window.onerror = function(msg, src, line, col, error) {
   console.error("Uncaught error:", msg, "at", src + ":" + line);
 };
 
+function resumeAudioContext() {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+window.addEventListener('touchstart', resumeAudioContext, { once: true });
+window.addEventListener('click', resumeAudioContext, { once: true });
+
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -167,7 +175,14 @@ function startFadeOut() {
 
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
-  playNextSound();
+  const key = keys[currentIndex];
+  const [txt, col] = getTypeAndColor(key);
+  displayText = txt;
+  color = col;
+  opacity = 1;
+  playSound(key);
+  startFadeOut();
+  currentIndex = (currentIndex + 1) % keys.length;
 });
 
 window.addEventListener('keydown', e => {

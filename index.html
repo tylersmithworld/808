@@ -104,7 +104,7 @@ const soundMap = {
 
 const keys = Object.keys(soundMap);
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const preloadKeys = isMobile ? ['a', 'c', 'g', 'q'] : [...keys];
+const preloadKeys = [...keys]; // Load all keys on both desktop and mobile for smoother playback
 
 let currentIndex = 0;
 let displayText = '';
@@ -114,6 +114,7 @@ let color = '#fff';
 let fadeTimer = null;
 let isReady = false;
 
+// Moved audioCtx before resumeAudioContext to fix desktop loading bug
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const audioBuffers = {};
 
@@ -228,8 +229,8 @@ function drawLabel() {
 
   // Draw background "808"
   ctx.save();
-  ctx.globalAlpha = 0.1;
-  ctx.fillStyle = 'gray';
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#aaa';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
@@ -259,6 +260,30 @@ function animate() {
 preloadEssentialSounds().then(() => {
   animate();
 });
+
+function showInstruction() {
+  const el = document.getElementById('instruction');
+  if (!el) return;
+  el.textContent = isMobile ? 'TAP' : 'TYPE';
+  el.style.opacity = 1;
+  setTimeout(() => {
+    el.style.opacity = 0;
+  }, 2000);
+}
+
+let inactivityTimer;
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    showInstruction();
+  }, 45000);
+}
+
+window.addEventListener('keydown', resetInactivityTimer);
+window.addEventListener('touchstart', resetInactivityTimer);
+
+// Show instruction once on load
+showInstruction();
 </script>
 </body>
 </html>

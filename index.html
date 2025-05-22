@@ -139,7 +139,6 @@ async function preloadEssentialSounds() {
   isReady = true;
 }
 
-// iOS fix: resume AudioContext
 function resumeAudioContext() {
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -195,50 +194,6 @@ canvas.addEventListener('touchstart', e => {
   }
 });
 
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  drawLabel();
-});
-
-function drawLabel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Splash: 'Loading...' or '808'
-  ctx.save();
-  ctx.globalAlpha = 0.25;
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `${Math.min(canvas.width * 0.15, 100)}px 'Bebas Neue', sans-serif`;
-  ctx.fillText(isReady ? '808' : 'Loading...', canvas.width / 2, canvas.height / 2);
-  ctx.restore();
-
-  if (displayText) {
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.scale(pulse, pulse);
-    ctx.font = `${Math.floor(canvas.height * 0.15)}px 'Bebas Neue', sans-serif`;
-    ctx.fillText(displayText, 0, 0);
-    ctx.restore();
-  }
-}
-
-function playNextSound() {
-  const key = keys[currentIndex];
-  const [txt, col] = getTypeAndColor(key);
-  displayText = txt;
-  color = col;
-  opacity = 1;
-  playSound(key);
-  startFadeOut();
-  currentIndex = (currentIndex + 1) % keys.length;
-}
-
 window.addEventListener('keydown', e => {
   const key = e.key.toLowerCase();
   if (soundMap[key]) {
@@ -251,7 +206,31 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// Instruction with pulsing
+function playNextSound() {
+  const key = keys[currentIndex];
+  const [txt, col] = getTypeAndColor(key);
+  displayText = txt;
+  color = col;
+  opacity = 1;
+  playSound(key);
+  startFadeOut();
+  currentIndex = (currentIndex + 1) % keys.length;
+}
+
+function triggerPulse() {
+  pulse = 1.8;
+  const start = performance.now();
+  const duration = 150;
+  function animatePulse(ts) {
+    const elapsed = ts - start;
+    const progress = Math.min(elapsed / duration, 1);
+    pulse = 1.8 - 0.8 * progress;
+    if (progress < 1) requestAnimationFrame(animatePulse);
+    else pulse = 1;
+  }
+  requestAnimationFrame(animatePulse);
+}
+
 function showInstruction() {
   if (!isReady) return;
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
@@ -273,6 +252,32 @@ function resetInactivityTimer() {
   inactivityTimer = setTimeout(() => {
     showInstruction();
   }, 45000);
+}
+
+function drawLabel() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${Math.min(canvas.height * 0.18, 160)}px 'Bebas Neue', sans-serif`;
+  ctx.fillText(isReady ? '808' : 'Loading...', canvas.width / 2, canvas.height / 2);
+  ctx.restore();
+
+  if (displayText) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(pulse, pulse);
+    ctx.font = `${Math.floor(canvas.height * 0.15)}px 'Bebas Neue', sans-serif`;
+    ctx.fillText(displayText, 0, 0);
+    ctx.restore();
+  }
 }
 
 function animate() {

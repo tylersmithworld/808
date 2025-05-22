@@ -35,6 +35,15 @@
       pointer-events: none;
       z-index: 5;
     }
+    @keyframes pulseFade {
+      0%   { transform: translateX(-50%) scale(1); }
+      50%  { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+    #instruction.pulsing {
+      animation: pulseFade 1s ease-in-out infinite;
+    }
+
     #promo {
       position: fixed;
       bottom: 10px;
@@ -242,16 +251,18 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// Instruction system
+// Instruction with pulsing
 function showInstruction() {
   if (!isReady) return;
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  const instructionEl = document.getElementById('instruction');
-  if (instructionEl) {
-    instructionEl.textContent = isMobile ? 'TAP' : 'TYPE';
-    instructionEl.style.opacity = 1;
+  const el = document.getElementById('instruction');
+  if (el) {
+    el.textContent = isMobile ? 'TAP' : 'TYPE';
+    el.classList.add('pulsing');
+    el.style.opacity = 1;
     setTimeout(() => {
-      instructionEl.style.opacity = 0;
+      el.style.opacity = 0;
+      el.classList.remove('pulsing');
     }, 2500);
   }
 }

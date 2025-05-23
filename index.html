@@ -310,10 +310,14 @@ window.addEventListener('touchstart', resetInactivityTimer);
 animate();
 preloadEssentialSounds().then(() => {
   const loadingEl = document.getElementById('loading');
-  if (isMobile && loadingEl) loadingEl.classList.remove('hide');
   isReady = true;
-  if (isMobile && loadingEl) loadingEl.classList.add('hide');}
-  } else if (!firstDesktopKeydown && !isMobile) {
+
+  // Hide loading screen only on mobile
+  if (isMobile && loadingEl) {
+    loadingEl.classList.add('hide');
+  }
+
+  if (!firstDesktopKeydown && !isMobile) {
     setTimeout(showInstruction, 6000);
   }
 });

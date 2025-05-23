@@ -269,7 +269,9 @@ window.addEventListener('touchstart', resetInactivityTimer);
 animate();
 preloadEssentialSounds().then(() => {
   isReady = true;
-  if (!firstDesktopKeydown && !isMobile) {
+  if (isMobile) {
+    setTimeout(showInstruction, 2000);
+  } else if (!firstDesktopKeydown) {
     setTimeout(showInstruction, 6000);
   }
 });

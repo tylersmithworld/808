@@ -95,7 +95,6 @@
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette 808s" />
   <div>Cassette 808s</div>
 </a>
-
 <script>
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
@@ -147,6 +146,46 @@ async function preloadEssentialSounds() {
   isReady = true;
 }
 
+canvas.addEventListener('touchstart', async e => {
+  e.preventDefault();
+  resetInactivityTimer();
+  if (!isReady) return;
+  if (!firstInteractionOccurred) {
+    firstInteractionOccurred = true;
+    ensureAudioContext();
+    await audioCtx.resume();
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.classList.add('hide');
+  }
+  const key = keys[currentIndex];
+  const [txt, col] = getTypeAndColor(key);
+  displayText = txt;
+  color = col;
+  opacity = 1;
+  playSound(key);
+  startFadeOut();
+  currentIndex = (currentIndex + 1) % keys.length;
+});
+
+window.addEventListener('keydown', e => {
+  resetInactivityTimer();
+  if (!isReady) return;
+  if (!firstDesktopKeydown) {
+    firstDesktopKeydown = true;
+    ensureAudioContext();
+    audioCtx.resume();
+  }
+  const key = e.key.toLowerCase();
+  if (soundMap[key]) {
+    const [txt, col] = getTypeAndColor(key);
+    displayText = txt;
+    color = col;
+    opacity = 1;
+    playSound(key);
+    startFadeOut();
+  }
+});
+
 function playSound(key) {
   const buffer = audioBuffers[key];
   if (!buffer) return;
@@ -184,66 +223,6 @@ function startFadeOut() {
   }, 200);
 }
 
-canvas.addEventListener('touchstart', async e => {
-  e.preventDefault();
-  resetInactivityTimer();
-
-  if (!firstInteractionOccurred && isReady) {
-    firstInteractionOccurred = true;
-    ensureAudioContext();
-    await audioCtx.resume();
-    hideInstruction();
-    requestAnimationFrame(() => {
-      const key = keys[currentIndex];
-      const [txt, col] = getTypeAndColor(key);
-      displayText = txt;
-      color = col;
-      opacity = 1;
-      playSound(key);
-      startFadeOut();
-      currentIndex = (currentIndex + 1) % keys.length;
-    });
-    return;
-  }
-  if (!isReady) return;
-  const key = keys[currentIndex];
-  const [txt, col] = getTypeAndColor(key);
-  displayText = txt;
-  color = col;
-  opacity = 1;
-  playSound(key);
-  startFadeOut();
-  currentIndex = (currentIndex + 1) % keys.length;
-});
-
-window.addEventListener('keydown', e => {
-  resetInactivityTimer();
-  if (!firstDesktopKeydown) firstDesktopKeydown = true;
-  const key = e.key.toLowerCase();
-  if (soundMap[key]) {
-    const [txt, col] = getTypeAndColor(key);
-    displayText = txt;
-    color = col;
-    opacity = 1;
-    playSound(key);
-    startFadeOut();
-  }
-});
-
-function triggerPulse() {
-  pulse = 1.8;
-  const start = performance.now();
-  const duration = 150;
-  function animatePulse(ts) {
-    const elapsed = ts - start;
-    const progress = Math.min(elapsed / duration, 1);
-    pulse = 1.8 - 0.8 * progress;
-    if (progress < 1) requestAnimationFrame(animatePulse);
-    else pulse = 1;
-  }
-  requestAnimationFrame(animatePulse);
-}
-
 function drawLabel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
@@ -251,14 +230,10 @@ function drawLabel() {
   ctx.fillStyle = '#aaa';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  const scale = isMobile ? 0.9 : 1.05;
+  const scale = isMobile ? 0.55 : 1.05;
   const yOffset = isMobile ? 0.5 : 0.58;
-
   ctx.font = `${Math.max(canvas.width, canvas.height) * scale}px 'Bebas Neue', sans-serif`;
   const verticalCenter = canvas.height * yOffset;
-
   ctx.fillText('808', canvas.width / 2, verticalCenter);
   ctx.restore();
 
@@ -276,10 +251,23 @@ function drawLabel() {
   }
 }
 
-
 function animate() {
   drawLabel();
   requestAnimationFrame(animate);
+}
+
+function triggerPulse() {
+  pulse = 1.8;
+  const start = performance.now();
+  const duration = 150;
+  function animatePulse(ts) {
+    const elapsed = ts - start;
+    const progress = Math.min(elapsed / duration, 1);
+    pulse = 1.8 - 0.8 * progress;
+    if (progress < 1) requestAnimationFrame(animatePulse);
+    else pulse = 1;
+  }
+  requestAnimationFrame(animatePulse);
 }
 
 function hideInstruction() {
@@ -320,13 +308,7 @@ window.addEventListener('touchstart', resetInactivityTimer);
 
 animate();
 preloadEssentialSounds().then(() => {
-  const loadingEl = document.getElementById('loading');
   isReady = true;
-
-  if (isMobile && loadingEl) {
-    loadingEl.classList.add('hide');
-  }
-
   if (!firstDesktopKeydown && !isMobile) {
     setTimeout(showInstruction, 6000);
   }

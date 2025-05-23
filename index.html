@@ -227,7 +227,8 @@ function drawLabel() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
-  ctx.fillText('808', canvas.width / 2, canvas.height / 2);
+  const verticalCenter = canvas.height / 2.25; // adjust factor to shift upward on mobile
+  ctx.fillText('808', canvas.width / 2, verticalCenter);
   ctx.restore();
   if (displayText) {
     ctx.save();

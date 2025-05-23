@@ -83,7 +83,11 @@
   </style>
 </head>
 <body>
-<div id="loading">Loading 808s…</div>
+<script>
+  if (isMobile) {
+    document.write('<div id="loading">Loading 808s…</div>');
+  }
+</script>
 <canvas id="visualizer"></canvas>
 <div id="instruction"></div>
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">

@@ -272,8 +272,10 @@ preloadEssentialSounds().then(() => {
   isReady = true;
   if (isMobile) {
     setTimeout(showInstruction, 2000);
-  } else if (!firstDesktopKeydown) {
-    setTimeout(showInstruction, 6000);
+  } else {
+    setTimeout(() => {
+      if (!firstDesktopKeydown) showInstruction();
+    }, 6000);
   }
 });
 </script>

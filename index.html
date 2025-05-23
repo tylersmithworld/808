@@ -63,10 +63,32 @@
     #promo div {
       font-size: 14px;
     }
-  </style>
-</head>
+  #loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  z-index: 100;
+  transition: opacity 0.5s ease;
+}
+
+.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
 <body>
-<canvas id="visualizer"></canvas>
+<canvas id="visualizer"><div id="loading" style="display: none;">Loading 808s…</div>
+
 <div id="instruction"></div>
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette 808s" />
@@ -287,6 +309,10 @@ window.addEventListener('touchstart', resetInactivityTimer);
 
 animate();
 preloadEssentialSounds().then(() => {
+  const loadingEl = document.getElementById('loading');
+  if (loadingEl && isMobile) loadingEl.style.display = 'flex';
+  const loadingEl = document.getElementById('loading');
+  if (loadingEl && isMobile) loadingEl.classList.add('hide');
   isReady = true;
   if (!firstInteractionOccurred && isMobile) {
     const el = document.getElementById('instruction');

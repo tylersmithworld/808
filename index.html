@@ -61,34 +61,9 @@
     #promo div {
       font-size: 14px;
     }
-    #loading {
-      position: fixed;
-      left: 50%;
-      top: 45%;
-      transform: translate(-50%, -50%);
-      background: #000;
-      color: white;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px;
-      padding: 12px 24px;
-      z-index: 100;
-      border-radius: 8px;
-      box-shadow: 0 0 12px rgba(255,255,255,0.1);
-      transition: opacity 0.5s ease;
-    }
-    .hide {
-      opacity: 0;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
-<script>
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  if (isMobile) {
-    document.write('<div id="loading">Loading</div>');
-  }
-</script>
 <canvas id="visualizer"></canvas>
 <div id="instruction"></div>
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
@@ -96,6 +71,7 @@
   <div>Cassette 808s</div>
 </a>
 <script>
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -115,13 +91,7 @@ const soundMap = {
 const keys = Object.keys(soundMap);
 let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
 let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
-let audioCtx;
-
-function ensureAudioContext() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 const audioBuffers = {};
 
@@ -129,7 +99,6 @@ async function loadAudioBuffer(key) {
   if (audioBuffers[key]) return audioBuffers[key];
   const response = await fetch(`${baseURL}${soundMap[key]}`);
   const arrayBuffer = await response.arrayBuffer();
-  ensureAudioContext();
   const buffer = await audioCtx.decodeAudioData(arrayBuffer);
   audioBuffers[key] = buffer;
   return buffer;
@@ -150,13 +119,7 @@ canvas.addEventListener('touchstart', async e => {
   e.preventDefault();
   resetInactivityTimer();
   if (!isReady) return;
-  if (!firstInteractionOccurred) {
-    firstInteractionOccurred = true;
-    ensureAudioContext();
-    await audioCtx.resume();
-    const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.classList.add('hide');
-  }
+  await audioCtx.resume();
   const key = keys[currentIndex];
   const [txt, col] = getTypeAndColor(key);
   displayText = txt;
@@ -167,14 +130,11 @@ canvas.addEventListener('touchstart', async e => {
   currentIndex = (currentIndex + 1) % keys.length;
 });
 
-window.addEventListener('keydown', e => {
+window.addEventListener('keydown', async e => {
   resetInactivityTimer();
   if (!isReady) return;
-  if (!firstDesktopKeydown) {
-    firstDesktopKeydown = true;
-    ensureAudioContext();
-    audioCtx.resume();
-  }
+  await audioCtx.resume();
+  if (!firstDesktopKeydown) firstDesktopKeydown = true;
   const key = e.key.toLowerCase();
   if (soundMap[key]) {
     const [txt, col] = getTypeAndColor(key);

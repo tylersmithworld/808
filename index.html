@@ -73,17 +73,12 @@
   <div>Cassette 808s</div>
 </a>
 <script>
-window.onerror = function(msg, src, line, col, error) {
-  console.error("Uncaught error:", msg, "at", src + ":" + line);
-};
-
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const baseURL = 'https://tylersmithworld.github.io/808/sounds/';
-
 const soundMap = {
   a: 'kick_30.mp3', b: 'cow_bell_18.mp3', c: 'snare_19.mp3', d: 'snare_17.mp3',
   e: '808_110.mp3', f: 'snare_23.mp3', g: 'clap_3.mp3', h: 'rim_9.mp3',
@@ -96,18 +91,8 @@ const soundMap = {
 
 const keys = Object.keys(soundMap);
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const preloadKeys = [...keys];
-
-let currentIndex = 0;
-let displayText = '';
-let opacity = 1;
-let pulse = 1;
-let color = '#fff';
-let fadeTimer = null;
-let isReady = false;
-let firstInteractionOccurred = false;
-let firstDesktopKeydown = false;
-
+let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
+let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const audioBuffers = {};
 
@@ -121,7 +106,7 @@ async function loadAudioBuffer(key) {
 }
 
 async function preloadEssentialSounds() {
-  for (const key of preloadKeys) {
+  for (const key of keys) {
     try {
       await loadAudioBuffer(key);
     } catch (e) {
@@ -168,29 +153,24 @@ function startFadeOut() {
   }, 200);
 }
 
-function playNextSound() {
-  const key = keys[currentIndex];
-  const [txt, col] = getTypeAndColor(key);
-  displayText = txt;
-  color = col;
-  opacity = 1;
-  playSound(key);
-  startFadeOut();
-  currentIndex = (currentIndex + 1) % keys.length;
-}
-
 canvas.addEventListener('touchstart', async e => {
   e.preventDefault();
   resetInactivityTimer();
-
   if (!firstInteractionOccurred && isReady) {
     firstInteractionOccurred = true;
     await audioCtx.resume();
     hideInstruction();
+    const key = keys[currentIndex];
+    const [txt, col] = getTypeAndColor(key);
+    displayText = txt;
+    color = col;
+    opacity = 1;
+    playSound(key);
+    startFadeOut();
+    currentIndex = (currentIndex + 1) % keys.length;
+    return;
   }
-
   if (!isReady) return;
-
   const key = keys[currentIndex];
   const [txt, col] = getTypeAndColor(key);
   displayText = txt;
@@ -231,7 +211,6 @@ function triggerPulse() {
 
 function drawLabel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   ctx.save();
   ctx.globalAlpha = 0.2125;
   ctx.fillStyle = '#aaa';
@@ -240,7 +219,6 @@ function drawLabel() {
   ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
   ctx.fillText('808', canvas.width / 2, canvas.height / 2);
   ctx.restore();
-
   if (displayText) {
     ctx.save();
     ctx.globalAlpha = opacity;

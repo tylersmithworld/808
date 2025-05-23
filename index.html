@@ -93,13 +93,19 @@ const keys = Object.keys(soundMap);
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
 let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx;
+function ensureAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
 const audioBuffers = {};
 
 async function loadAudioBuffer(key) {
   if (audioBuffers[key]) return audioBuffers[key];
   const response = await fetch(`${baseURL}${soundMap[key]}`);
   const arrayBuffer = await response.arrayBuffer();
+  ensureAudioContext();
   const buffer = await audioCtx.decodeAudioData(arrayBuffer);
   audioBuffers[key] = buffer;
   return buffer;
@@ -159,6 +165,7 @@ canvas.addEventListener('touchstart', async e => {
 
   if (!firstInteractionOccurred && isReady) {
     firstInteractionOccurred = true;
+    ensureAudioContext();
     await audioCtx.resume();
     hideInstruction();
     requestAnimationFrame(() => {

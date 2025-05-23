@@ -87,7 +87,7 @@
 
 
 <body>
-<canvas id="visualizer"><div id="loading" style="display: none;">Loading 808s…</div>
+<canvas id="visualizer"><div id="loading">Loading 808s…</div>
 
 <div id="instruction"></div>
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
@@ -309,16 +309,10 @@ window.addEventListener('touchstart', resetInactivityTimer);
 
 animate();
 preloadEssentialSounds().then(() => {
-  // removed duplicate
-  if (isMobile && loadingEl) loadingEl.style.display = 'flex';
-  if (isMobile && loadingEl) loadingEl.classList.add('hide');
+  const loadingEl = document.getElementById('loading');
+  if (isMobile && loadingEl) loadingEl.classList.remove('hide');
   isReady = true;
-  if (!firstInteractionOccurred && isMobile) {
-    const el = document.getElementById('instruction');
-    if (el) {
-      el.textContent = 'TAP';
-      el.style.opacity = 1;
-    }
+  if (isMobile && loadingEl) loadingEl.classList.add('hide');}
   } else if (!firstDesktopKeydown && !isMobile) {
     setTimeout(showInstruction, 6000);
   }

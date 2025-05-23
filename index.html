@@ -156,18 +156,21 @@ function startFadeOut() {
 canvas.addEventListener('touchstart', async e => {
   e.preventDefault();
   resetInactivityTimer();
+
   if (!firstInteractionOccurred && isReady) {
     firstInteractionOccurred = true;
     await audioCtx.resume();
     hideInstruction();
-    const key = keys[currentIndex];
-    const [txt, col] = getTypeAndColor(key);
-    displayText = txt;
-    color = col;
-    opacity = 1;
-    playSound(key);
-    startFadeOut();
-    currentIndex = (currentIndex + 1) % keys.length;
+    requestAnimationFrame(() => {
+      const key = keys[currentIndex];
+      const [txt, col] = getTypeAndColor(key);
+      displayText = txt;
+      color = col;
+      opacity = 1;
+      playSound(key);
+      startFadeOut();
+      currentIndex = (currentIndex + 1) % keys.length;
+    });
     return;
   }
   if (!isReady) return;

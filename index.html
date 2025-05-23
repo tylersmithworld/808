@@ -21,9 +21,9 @@
     }
     #instruction {
   position: fixed;
-  top: 50%;
+  bottom: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   color: white;
   font-size: 22px;
   background: rgba(0,0,0,0.5);
@@ -203,7 +203,7 @@ function drawLabel() {
     ctx.fillStyle = color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.translate(canvas.width / 2, canvas.height * (isMobile ? 0.54 : 0.44));
+    ctx.translate(canvas.width / 2, canvas.height * (isMobile ? 0.46 : 0.44));
     ctx.scale(pulse, pulse);
     ctx.font = `${Math.floor(canvas.height * 0.15)}px 'Bebas Neue', sans-serif`;
     ctx.fillText(displayText, 0, 0);

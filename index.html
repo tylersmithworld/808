@@ -26,7 +26,6 @@
       transform: translateX(-50%);
       color: white;
       font-size: 22px;
-      font-family: 'Bebas Neue', sans-serif;
       background: rgba(0,0,0,0.5);
       padding: 8px 16px;
       border-radius: 6px;
@@ -49,7 +48,6 @@
       right: 10px;
       text-align: center;
       text-decoration: none;
-      font-family: 'Bebas Neue', sans-serif;
       color: white;
       z-index: 10;
     }
@@ -63,37 +61,36 @@
     #promo div {
       font-size: 14px;
     }
-  #loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 24px;
-  z-index: 100;
-  transition: opacity 0.5s ease;
-}
-
-.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      z-index: 100;
+      transition: opacity 0.5s ease;
+    }
+    .hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
 <body>
-<canvas id="visualizer"><div id="loading">Loading 808s…</div>
-
+<div id="loading">Loading 808s…</div>
+<canvas id="visualizer"></canvas>
 <div id="instruction"></div>
 <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
   <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette 808s" />
   <div>Cassette 808s</div>
 </a>
+
 <script>
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
@@ -116,11 +113,13 @@ const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
 let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
 let audioCtx;
+
 function ensureAudioContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
 }
+
 const audioBuffers = {};
 
 async function loadAudioBuffer(key) {
@@ -249,7 +248,7 @@ function drawLabel() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
-  const verticalCenter = canvas.height / 2.25; // adjust factor to shift upward on mobile
+  const verticalCenter = canvas.height / 2.25;
   ctx.fillText('808', canvas.width / 2, verticalCenter);
   ctx.restore();
   if (displayText) {
@@ -312,7 +311,6 @@ preloadEssentialSounds().then(() => {
   const loadingEl = document.getElementById('loading');
   isReady = true;
 
-  // Hide loading screen only on mobile
   if (isMobile && loadingEl) {
     loadingEl.classList.add('hide');
   }

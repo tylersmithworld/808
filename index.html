@@ -251,10 +251,17 @@ function drawLabel() {
   ctx.fillStyle = '#aaa';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-ctx.font = `${Math.max(canvas.width, canvas.height) * 1.05}px 'Bebas Neue', sans-serif`;
-const verticalCenter = canvas.height * 0.58;
-ctx.fillText('808', canvas.width / 2, verticalCenter);
+
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const scale = isMobile ? 0.9 : 1.05;
+  const yOffset = isMobile ? 0.5 : 0.58;
+
+  ctx.font = `${Math.max(canvas.width, canvas.height) * scale}px 'Bebas Neue', sans-serif`;
+  const verticalCenter = canvas.height * yOffset;
+
+  ctx.fillText('808', canvas.width / 2, verticalCenter);
   ctx.restore();
+
   if (displayText) {
     ctx.save();
     ctx.globalAlpha = opacity;
@@ -268,6 +275,7 @@ ctx.fillText('808', canvas.width / 2, verticalCenter);
     ctx.restore();
   }
 }
+
 
 function animate() {
   drawLabel();

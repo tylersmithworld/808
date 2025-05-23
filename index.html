@@ -63,17 +63,17 @@
     }
     #loading {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      left: 50%;
+      top: 45%;
+      transform: translate(-50%, -50%);
       background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: white;
-      font-size: 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      padding: 12px 24px;
       z-index: 100;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.1);
       transition: opacity 0.5s ease;
     }
     .hide {
@@ -84,8 +84,9 @@
 </head>
 <body>
 <script>
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   if (isMobile) {
-    document.write('<div id="loading">Loading 808s…</div>');
+    document.write('<div id="loading">Loading</div>');
   }
 </script>
 <canvas id="visualizer"></canvas>
@@ -113,7 +114,6 @@ const soundMap = {
 };
 
 const keys = Object.keys(soundMap);
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
 let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
 let audioCtx;
@@ -251,9 +251,9 @@ function drawLabel() {
   ctx.fillStyle = '#aaa';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
-  const verticalCenter = canvas.height / 2.25;
-  ctx.fillText('808', canvas.width / 2, verticalCenter);
+ctx.font = `${Math.max(canvas.width, canvas.height) * 1.05}px 'Bebas Neue', sans-serif`;
+const verticalCenter = canvas.height * 0.58;
+ctx.fillText('808', canvas.width / 2, verticalCenter);
   ctx.restore();
   if (displayText) {
     ctx.save();

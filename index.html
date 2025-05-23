@@ -240,9 +240,11 @@ function showInstruction() {
   if (!el) return;
   el.textContent = isMobile ? 'TAP' : 'TYPE';
   el.style.opacity = 1;
+  el.style.transition = 'opacity 1.5s ease';
   setTimeout(() => {
     el.style.opacity = 0;
   }, 2000);
+}, 2000);
 }
 
 let inactivityTimer;

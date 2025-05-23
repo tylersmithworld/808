@@ -309,10 +309,9 @@ window.addEventListener('touchstart', resetInactivityTimer);
 
 animate();
 preloadEssentialSounds().then(() => {
-  const loadingEl = document.getElementById('loading');
-  if (loadingEl && isMobile) loadingEl.style.display = 'flex';
-  const loadingEl = document.getElementById('loading');
-  if (loadingEl && isMobile) loadingEl.classList.add('hide');
+  // removed duplicate
+  if (isMobile && loadingEl) loadingEl.style.display = 'flex';
+  if (isMobile && loadingEl) loadingEl.classList.add('hide');
   isReady = true;
   if (!firstInteractionOccurred && isMobile) {
     const el = document.getElementById('instruction');

@@ -6,52 +6,22 @@
   <title>808 Drum Grid</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: black;
-    }
-    canvas {
-      display: block;
-      background: black;
-      touch-action: none;
-    }
+    html, body { margin: 0; padding: 0; overflow: hidden; background: black; }
+    canvas { display: block; background: black; touch-action: none; }
     #keyboard-legend {
-      position: fixed;
-      bottom: 22px;
-      left: 22px;
-      width: 110px;
-      height: 46px;
-      display: none;
-      z-index: 101;
-      pointer-events: none;
+      position: fixed; bottom: 22px; left: 22px; width: 110px; height: 46px;
+      display: none; z-index: 101; pointer-events: none;
     }
     @media (pointer: fine) {
-      #keyboard-legend {
-        display: block;
-      }
+      #keyboard-legend { display: block; }
     }
     #promo {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      text-align: center;
-      text-decoration: none;
-      font-family: 'Bebas Neue', sans-serif;
-      color: white;
-      z-index: 10;
+      position: fixed; bottom: 10px; right: 10px; text-align: center;
+      text-decoration: none; font-family: 'Bebas Neue', sans-serif;
+      color: white; z-index: 10;
     }
-    #promo img {
-      width: 70px;
-      height: auto;
-      display: block;
-      margin: 0 auto 4px auto;
-      border-radius: 4px;
-    }
-    #promo div {
-      font-size: 14px;
-    }
+    #promo img { width: 70px; height: auto; display: block; margin: 0 auto 4px auto; border-radius: 4px; }
+    #promo div { font-size: 14px; }
   </style>
 </head>
 <body>
@@ -70,7 +40,38 @@
     <div>Cassette Tape 808s</div>
   </a>
   <script>
-    // Detect mobile for grid overlay
+    // --- COLUMN ARRAYS: easiest way to set up grid mapping ---
+    const aColKeys = ['a','e','s','a4','b2','b1'];
+    const bColKeys = ['h','d','c','g','b5','v']; // B5 is 'b5'
+    const cColKeys = ['c1','c2','c3','c4','c5','c6']; // new, direct!
+
+    // --- SOUND & LABEL MAPS ---
+    const soundMap = {
+      // A column
+      a: '808 27.mp3', e: '808_110.mp3', s: '808_45.mp3', a4: 'kick14.mp3', b2: '808_81.mp3', b1: '808_89.mp3',
+      // B column
+      h: 'rim_9.mp3', d: 'snare_17.mp3', c: 'snare_19.mp3', g: 'clap_3.mp3', b5: 'clapd.mp3', v: 'snare_36.mp3',
+      // C column: replace these to test!
+      c1: 'cow_bell_25.mp3', // C1
+      c2: 'hi_hat_7.mp3',    // C2
+      c3: 'hi_hat_2.mp3',    // C3
+      c4: 'open_hi.mp3',     // C4
+      c5: 'ohat3.mp3',       // C5
+      c6: 'cymbal_12.mp3',   // C6
+      // extras for keyboard
+      b: 'cow_bell_18.mp3', f: 'snare_23.mp3', j: 'hi_hat_6.mp3', k: 'hi_hat_2.mp3', l: 'hi_hat_7.mp3',
+      m: 'cow_bell_25.mp3', n: 'clave_3.mp3', o: 'open_hi_7.mp3', p: 'cymbal_15.mp3',
+      i: 'open_hi.mp3', q: '808_42.mp3', r: 'snare_11.mp3', u: 'cymbal_15.mp3',
+      w: '808_102.mp3', x: '808_78.mp3', y: 'tom.mp3', z: '808_90.mp3'
+    };
+    const labelMap = {
+      a: '808', a4: 'KICK', e: 'BOOM', s: 'KICK', b1: 'BOOM', b2: '808',
+      h: 'RIM', d: 'SNARE', c: 'SNARE', g: 'CLAP', b5: 'CLAP', v: 'SNARE',
+      c1: 'COWBELL', c2: 'HAT', c3: 'HAT', c4: 'HAT', c5: 'HAT', c6: 'CYMBAL',
+      b: 'COWBELL', f: 'SNARE', j: 'HAT', k: 'HAT', l: 'HAT', m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', i: 'HAT',
+      q: '808', r: 'SNARE', u: 'CYMBAL', w: 'BOOM', x: '808', y: 'TOM', z: 'BOOM'
+    };
+
     function isMobile() {
       return /Mobi|Android/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
     }
@@ -84,47 +85,22 @@
     const ctx = canvas.getContext('2d');
     updateLegendDisplay();
 
-    // --- SOUND & LABEL MAPS (A+B) ---
-    const soundMap = {
-      a: 'kick_30.mp3',   // A1
-      e: '808_110.mp3',   // A2
-      s: '808 45.mp3',    // A3
-      a4: 'kick_14.mp3',  // A4
-      b2: '808_81.mp3',   // A5
-      b1: '808_89.mp3',   // A6
-
-      h: 'rim_9.mp3',     // B1
-      d: 'snare_17.mp3',  // B2
-      c: 'snare_19.mp3',  // B3
-      g: 'clap_3.mp3',    // B4
-      t: 'clap_2.mp3',    // B5
-      v: 'snare_36.mp3',  // B6
-
-      // C column can be changed as needed
-      b: 'cow_bell_18.mp3', f: 'snare_23.mp3', j: 'hi_hat_6.mp3', k: 'hi_hat_2.mp3', l: 'hi_hat_7.mp3',
-      m: 'cow_bell_25.mp3', n: 'clave_3.mp3', o: 'open_hi_7.mp3', p: 'cymbal_15.mp3',
-      i: 'open_hi.mp3', q: '808_42.mp3', r: 'snare_11.mp3', u: 'cymbal_15.mp3',
-      w: '808_102.mp3', x: '808_78.mp3', y: 'tom.mp3', z: '808_90.mp3'
-    };
-
-    const labelMap = {
-      a: 'KICK', a4: 'KICK', e: '808', s: 'KICK',
-      b1: '808', b2: '808',
-      h: 'RIM', d: 'SNARE', c: 'SNARE', g: 'CLAP', t: 'CLAP', v: 'SNARE',
-      b: 'COWBELL', f: 'SNARE', j: 'HAT', k: 'HAT', l: 'HAT',
-      m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', i: 'HAT',
-      q: '808', r: 'SNARE', u: 'CYMBAL', w: 'BOOM', x: '808',
-      y: 'TOM', z: 'BOOM'
-    };
+    function getGridKey(x, y) {
+      const h = canvas.height;
+      const rows = 6;
+      const cellH = h / rows;
+      const rowIndex = Math.floor(y / cellH);
+      if (x < canvas.width / 3) return aColKeys[rowIndex];
+      else if (x < 2 * canvas.width / 3) return bColKeys[rowIndex];
+      else return cColKeys[rowIndex];
+    }
 
     let displayText = '', displayColor = '#fff', opacity = 0, pulse = 1;
     let fadeInterval = null, fadeTimer = null, pulseId = 0, isReady = false;
     let lastInteraction = Date.now();
     let animFrame;
-
     const colorCycle = ['#ffffff', '#ff7700', '#E42701'];
     let colorIndex = 0;
-
     let gridLabelOpacity = 0;
     let gridLabelFadeInterval = null;
     let gridLabelRewardTimer = null;
@@ -159,7 +135,6 @@
         }
       }, 22);
     }
-
     function scheduleGridLabelReward(first) {
       let delay = first ? GRID_LABEL_FIRST_SHOW_DELAY : GRID_LABEL_REPEAT_INTERVAL;
       if (gridLabelRewardTimer) clearTimeout(gridLabelRewardTimer);
@@ -242,19 +217,6 @@
       }, 140);
     }
 
-    // Final A and B columns:
-    // A = ['a','e','s','a4','b2','b1']
-    // B = ['h','d','c','g','t','v']     (B3 = 'c', B6 = 'v')
-    function getGridKey(x, y) {
-      const h = canvas.height;
-      const rows = 6;
-      const cellH = h / rows;
-      const rowIndex = Math.floor(y / cellH);
-      if (x < canvas.width / 3) return ['a','e','s','a4','b2','b1'][rowIndex];
-      else if (x < 2 * canvas.width / 3) return ['h','d','c','g','t','v'][rowIndex];
-      else return ['m','j','k','l','o','p'][rowIndex];
-    }
-
     // Touch (mobile)
     canvas.addEventListener('touchstart', async e => {
       e.preventDefault();
@@ -282,8 +244,6 @@
       if (!soundMap[key]) return;
       playSound(key);
     });
-
-    window.addEventListener('mousedown', () => {}, { passive: false });
 
     function drawGridOverlay() {
       if (!isMobile()) return;
@@ -366,7 +326,6 @@
       animate();
       scheduleGridLabelReward(true);
     });
-
   </script>
 </body>
 </html>

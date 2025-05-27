@@ -3,44 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>808 Player</title>
+  <title>808 Drum Grid</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: #000;
-      touch-action: none;
-      font-family: 'Bebas Neue', sans-serif;
+      background: black;
     }
     canvas {
       display: block;
-      width: 100vw;
-      height: 100vh;
+      background: black;
+      touch-action: none;
     }
-    #instruction {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-size: 22px;
-  background: rgba(0,0,0,0.5);
-  padding: 8px 16px;
-  border-radius: 6px;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  pointer-events: none;
-  z-index: 5;
-}
-    @keyframes pulseFade {
-      0%   { transform: translateX(-50%) scale(1); }
-      50%  { transform: translateX(-50%) scale(1.1); }
-      100% { transform: translateX(-50%) scale(1); }
+    #keyboard-legend {
+      position: fixed;
+      bottom: 22px;
+      left: 22px;
+      width: 110px;
+      height: 46px;
+      display: none;
+      z-index: 101;
+      pointer-events: none;
     }
-    #instruction.pulsing {
-      animation: pulseFade 1s ease-in-out infinite;
+    @media (pointer: fine) {
+      #keyboard-legend {
+        display: block;
+      }
     }
     #promo {
       position: fixed;
@@ -48,6 +38,7 @@
       right: 10px;
       text-align: center;
       text-decoration: none;
+      font-family: 'Bebas Neue', sans-serif;
       color: white;
       z-index: 10;
     }
@@ -64,220 +55,318 @@
   </style>
 </head>
 <body>
-<canvas id="visualizer"></canvas>
-<div id="instruction"></div>
-<a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
-  <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette 808s" />
-  <div>Cassette 808s</div>
-</a>
-<script>
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const canvas = document.getElementById('visualizer');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const baseURL = 'https://tylersmithworld.github.io/808/sounds/';
-const soundMap = {
-  a: 'kick_30.mp3', b: 'cow_bell_18.mp3', c: 'snare_19.mp3', d: 'snare_17.mp3',
-  e: '808_110.mp3', f: 'snare_23.mp3', g: 'clap_3.mp3', h: 'rim_9.mp3',
-  i: 'open_hi.mp3', j: 'hi_hat_6.mp3', k: 'hi_hat_2.mp3', l: 'hi_hat_7.mp3',
-  m: 'cow_bell_25.mp3', n: 'clave_3.mp3', o: 'open_hi_7.mp3', p: 'cymbal_15.mp3',
-  q: '808_42.mp3', r: 'snare_11.mp3', s: '808_45.mp3', t: 'clap_2.mp3',
-  u: 'cymbal_15.mp3', v: 'snare_36.mp3', w: '808_102.mp3', x: '808_78.mp3',
-  y: 'tom.mp3', z: '808_90.mp3'
-};
-
-const keys = Object.keys(soundMap);
-let currentIndex = 0, displayText = '', opacity = 1, pulse = 1, color = '#fff';
-let fadeTimer = null, isReady = false, firstInteractionOccurred = false, firstDesktopKeydown = false;
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-const audioBuffers = {};
-
-async function loadAudioBuffer(key) {
-  if (audioBuffers[key]) return audioBuffers[key];
-  const response = await fetch(`${baseURL}${soundMap[key]}`);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = await audioCtx.decodeAudioData(arrayBuffer);
-  audioBuffers[key] = buffer;
-  return buffer;
-}
-
-async function preloadEssentialSounds() {
-  for (const key of keys) {
-    try {
-      await loadAudioBuffer(key);
-    } catch (e) {
-      console.warn(`Failed to load sound for key "${key}":`, e);
+  <canvas id="visualizer"></canvas>
+  <svg id="keyboard-legend" viewBox="0 0 110 46">
+    <rect x="0" y="0" width="110" height="46" rx="9" fill="#111" stroke="#fff" stroke-width="2"/>
+    <rect x="5" y="8" width="32" height="30" rx="6" fill="none" stroke="#ff7700" stroke-width="2"/>
+    <rect x="39" y="8" width="32" height="30" rx="6" fill="none" stroke="#ff7700" stroke-width="2"/>
+    <rect x="73" y="8" width="32" height="30" rx="6" fill="none" stroke="#ff7700" stroke-width="2"/>
+    <text x="21" y="28" font-family="Bebas Neue, sans-serif" font-size="15" fill="#ff7700" text-anchor="middle" alignment-baseline="middle">KICK</text>
+    <text x="55" y="28" font-family="Bebas Neue, sans-serif" font-size="15" fill="#ff7700" text-anchor="middle" alignment-baseline="middle">SNARE</text>
+    <text x="89" y="28" font-family="Bebas Neue, sans-serif" font-size="15" fill="#ff7700" text-anchor="middle" alignment-baseline="middle">HAT</text>
+  </svg>
+  <a id="promo" href="https://depalmahouse.gumroad.com/l/urwwjz" target="_blank">
+    <img src="https://tylersmithworld.github.io/808/select1.jpeg" alt="Cassette Tape 808s" />
+    <div>Cassette Tape 808s</div>
+  </a>
+  <script>
+    // Detect mobile for grid overlay
+    function isMobile() {
+      return /Mobi|Android/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
     }
-  }
-  isReady = true;
-}
+    function updateLegendDisplay() {
+      document.getElementById('keyboard-legend').style.display = isMobile() ? "none" : "block";
+    }
+    window.addEventListener('resize', updateLegendDisplay);
+    window.addEventListener('orientationchange', updateLegendDisplay);
 
-canvas.addEventListener('touchstart', async e => {
-  e.preventDefault();
-  resetInactivityTimer();
-  if (!isReady) return;
-  await audioCtx.resume();
-  const key = keys[currentIndex];
-  const [txt, col] = getTypeAndColor(key);
-  displayText = txt;
-  color = col;
-  opacity = 1;
-  playSound(key);
-  startFadeOut();
-  currentIndex = (currentIndex + 1) % keys.length;
-});
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    updateLegendDisplay();
 
-window.addEventListener('keydown', async e => {
-  resetInactivityTimer();
-  if (!isReady) return;
-  await audioCtx.resume();
-  if (!firstDesktopKeydown) firstDesktopKeydown = true;
-  const key = e.key.toLowerCase();
-  if (soundMap[key]) {
-    const [txt, col] = getTypeAndColor(key);
-    displayText = txt;
-    color = col;
-    opacity = 1;
-    playSound(key);
-    startFadeOut();
-  }
-});
+    // --- SOUND & LABEL MAPS (A+B) ---
+    const soundMap = {
+      a: 'kick_30.mp3',   // A1
+      e: '808_110.mp3',   // A2
+      s: '808_45.mp3',    // A3
+      a4: 'kick_14.mp3',  // A4
+      b2: '808_81.mp3',   // A5
+      b1: '808_89.mp3',   // A6
 
-function playSound(key) {
-  const buffer = audioBuffers[key];
-  if (!buffer) return;
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioCtx.destination);
-  source.start(0);
-  triggerPulse();
-}
+      h: 'rim_9.mp3',     // B1
+      d: 'snare_17.mp3',  // B2
+      c: 'snare_19.mp3',  // B3
+      g: 'clap_3.mp3',    // B4
+      t: 'clap_2.mp3',    // B5
+      v: 'snare_36.mp3',  // B6
 
-function getTypeAndColor(key) {
-  const labelMap = {
-    a: 'KICK', b: 'COWBELL', c: 'SNARE', d: 'SNARE', e: 'BOOM', f: 'SNARE',
-    g: 'CLAP', h: 'RIM', i: 'HAT', j: 'HAT', k: 'HAT', l: 'HAT',
-    m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', q: '808', r: 'SNARE',
-    s: 'KICK', t: 'CLAP', u: 'CYMBAL', v: 'SNARE', w: 'BOOM', x: '808',
-    y: 'TOM', z: 'BOOM'
-  };
-  const label = labelMap[key] || 'SOUND';
-  const col = ['#ffffff', '#ff7700', '#ff0000'][Math.floor(Math.random() * 3)];
-  return [label, col];
-}
+      // C column can be changed as needed
+      b: 'cow_bell_18.mp3', f: 'snare_23.mp3', j: 'hi_hat_6.mp3', k: 'hi_hat_2.mp3', l: 'hi_hat_7.mp3',
+      m: 'cow_bell_25.mp3', n: 'clave_3.mp3', o: 'open_hi_7.mp3', p: 'cymbal_15.mp3',
+      i: 'open_hi.mp3', q: '808_42.mp3', r: 'snare_11.mp3', u: 'cymbal_15.mp3',
+      w: '808_102.mp3', x: '808_78.mp3', y: 'tom.mp3', z: '808_90.mp3'
+    };
 
-function startFadeOut() {
-  if (fadeTimer) clearTimeout(fadeTimer);
-  fadeTimer = setTimeout(() => {
-    const fadeInterval = setInterval(() => {
-      opacity -= 0.05;
-      if (opacity <= 0) {
-        opacity = 0;
-        displayText = '';
-        clearInterval(fadeInterval);
-      }
-    }, 30);
-  }, 200);
-}
+    const labelMap = {
+      a: 'KICK', a4: 'KICK', e: '808', s: 'KICK',
+      b1: '808', b2: '808',
+      h: 'RIM', d: 'SNARE', c: 'SNARE', g: 'CLAP', t: 'CLAP', v: 'SNARE',
+      b: 'COWBELL', f: 'SNARE', j: 'HAT', k: 'HAT', l: 'HAT',
+      m: 'COWBELL', n: 'CLAVE', o: 'HAT', p: 'CYMBAL', i: 'HAT',
+      q: '808', r: 'SNARE', u: 'CYMBAL', w: 'BOOM', x: '808',
+      y: 'TOM', z: 'BOOM'
+    };
 
-function drawLabel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.globalAlpha = 0.2125;
-  ctx.fillStyle = '#aaa';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const scale = isMobile ? 0.55 : 1.05;
-  const yOffset = isMobile ? 0.5 : 0.58;
-  ctx.font = `${Math.max(canvas.width, canvas.height) * scale}px 'Bebas Neue', sans-serif`;
-  const verticalCenter = canvas.height * yOffset;
-  ctx.fillText('808', canvas.width / 2, verticalCenter);
-  ctx.restore();
+    let displayText = '', displayColor = '#fff', opacity = 0, pulse = 1;
+    let fadeInterval = null, fadeTimer = null, pulseId = 0, isReady = false;
+    let lastInteraction = Date.now();
+    let animFrame;
 
-  if (displayText) {
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.translate(canvas.width / 2, canvas.height * (isMobile ? 0.46 : 0.44));
-    ctx.scale(pulse, pulse);
-    ctx.font = `${Math.floor(canvas.height * 0.15)}px 'Bebas Neue', sans-serif`;
-    ctx.fillText(displayText, 0, 0);
-    ctx.restore();
-  }
-}
+    const colorCycle = ['#ffffff', '#ff7700', '#E42701'];
+    let colorIndex = 0;
 
-function animate() {
-  drawLabel();
-  requestAnimationFrame(animate);
-}
+    let gridLabelOpacity = 0;
+    let gridLabelFadeInterval = null;
+    let gridLabelRewardTimer = null;
+    const GRID_LABEL_TARGET_OPACITY = 0.28;
+    const GRID_LABEL_FADE_DURATION = 500;
+    const GRID_LABEL_VISIBLE_DURATION = 10000;
+    const GRID_LABEL_FIRST_SHOW_DELAY = 100000;
+    const GRID_LABEL_REPEAT_INTERVAL = 180000;
 
-function triggerPulse() {
-  pulse = 1.8;
-  const start = performance.now();
-  const duration = 150;
-  function animatePulse(ts) {
-    const elapsed = ts - start;
-    const progress = Math.min(elapsed / duration, 1);
-    pulse = 1.8 - 0.8 * progress;
-    if (progress < 1) requestAnimationFrame(animatePulse);
-    else pulse = 1;
-  }
-  requestAnimationFrame(animatePulse);
-}
-
-function hideInstruction() {
-  const el = document.getElementById('instruction');
-  if (el) el.style.opacity = 0;
-}
-
-function showInstruction() {
-  const el = document.getElementById('instruction');
-  if (!el) return;
-  el.textContent = isMobile ? 'TAP' : 'TYPE';
-  el.style.opacity = 1;
-  el.style.transition = 'opacity 1.5s ease';
-  setTimeout(() => {
-    el.style.opacity = 0;
-  }, 2000);
-}
-
-let inactivityTimer;
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(() => {
-    setTimeout(() => {
-      if (!firstInteractionOccurred && isMobile) {
-        const el = document.getElementById('instruction');
-        if (el) {
-          el.textContent = 'TAP';
-          el.style.opacity = 1;
+    function popUpGridLabels() {
+      if (!isMobile()) return;
+      if (gridLabelFadeInterval) clearInterval(gridLabelFadeInterval);
+      let steps = Math.floor(GRID_LABEL_FADE_DURATION / 22);
+      let stepSize = GRID_LABEL_TARGET_OPACITY / steps;
+      gridLabelOpacity = 0;
+      gridLabelFadeInterval = setInterval(() => {
+        gridLabelOpacity += stepSize;
+        if (gridLabelOpacity >= GRID_LABEL_TARGET_OPACITY) {
+          gridLabelOpacity = GRID_LABEL_TARGET_OPACITY;
+          clearInterval(gridLabelFadeInterval);
+          setTimeout(() => {
+            let stepsOut = Math.floor(GRID_LABEL_FADE_DURATION / 22);
+            let stepSizeOut = GRID_LABEL_TARGET_OPACITY / stepsOut;
+            gridLabelFadeInterval = setInterval(() => {
+              gridLabelOpacity -= stepSizeOut;
+              if (gridLabelOpacity <= 0) {
+                gridLabelOpacity = 0;
+                clearInterval(gridLabelFadeInterval);
+              }
+            }, 22);
+          }, GRID_LABEL_VISIBLE_DURATION);
         }
-      } else if (!firstDesktopKeydown && !isMobile) {
-        showInstruction();
+      }, 22);
+    }
+
+    function scheduleGridLabelReward(first) {
+      let delay = first ? GRID_LABEL_FIRST_SHOW_DELAY : GRID_LABEL_REPEAT_INTERVAL;
+      if (gridLabelRewardTimer) clearTimeout(gridLabelRewardTimer);
+      gridLabelRewardTimer = setTimeout(() => {
+        popUpGridLabels();
+        scheduleGridLabelReward(false);
+      }, delay);
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffers = {};
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    async function loadAudioBuffer(key) {
+      const url = `https://tylersmithworld.github.io/808/sounds/${soundMap[key]}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch " + url);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+        audioBuffers[key] = buffer;
+      } catch (err) {
+        console.error("Sound loading error for key:", key, "url:", url, err);
       }
-    }, 100);
-  }, 6000);
-}
+    }
 
-window.addEventListener('keydown', resetInactivityTimer);
-window.addEventListener('touchstart', resetInactivityTimer);
+    async function preloadSounds() {
+      await Promise.all(Object.keys(soundMap).map(loadAudioBuffer));
+      isReady = true;
+    }
 
-animate();
-preloadEssentialSounds().then(() => {
-  isReady = true;
-  if (isMobile) {
-    setTimeout(showInstruction, 2000);
-  } else {
-    setTimeout(() => {
-      if (!firstDesktopKeydown) showInstruction();
-    }, 6000);
-  }
-});
-</script>
+    function playSound(key) {
+      if (!audioBuffers[key]) {
+        console.warn("No buffer for key", key);
+        return;
+      }
+      const source = audioCtx.createBufferSource();
+      source.buffer = audioBuffers[key];
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 1.0;
+      source.connect(gainNode).connect(audioCtx.destination);
+      source.start(0);
+
+      displayText = labelMap[key] || '';
+      displayColor = colorCycle[colorIndex % colorCycle.length];
+      colorIndex++;
+      opacity = 1;
+      pulseId += 1;
+      const myPulse = pulseId;
+      pulse = 1.8;
+      const start = performance.now();
+      const duration = 150;
+      function animatePulse(ts) {
+        if (myPulse !== pulseId) return;
+        const elapsed = ts - start;
+        const progress = Math.min(elapsed / duration, 1);
+        pulse = 1.8 - 0.8 * progress;
+        if (progress < 1) requestAnimationFrame(animatePulse);
+        else pulse = 1;
+      }
+      requestAnimationFrame(animatePulse);
+
+      if (fadeInterval) clearInterval(fadeInterval);
+      if (fadeTimer) clearTimeout(fadeTimer);
+      fadeTimer = setTimeout(() => {
+        fadeInterval = setInterval(() => {
+          opacity -= 0.04;
+          if (opacity <= 0) {
+            opacity = 0;
+            displayText = '';
+            clearInterval(fadeInterval);
+          }
+        }, 22);
+      }, 140);
+    }
+
+    // Final A and B columns:
+    // A = ['a','e','s','a4','b2','b1']
+    // B = ['h','d','c','g','t','v']     (B3 = 'c', B6 = 'v')
+    function getGridKey(x, y) {
+      const h = canvas.height;
+      const rows = 6;
+      const cellH = h / rows;
+      const rowIndex = Math.floor(y / cellH);
+      if (x < canvas.width / 3) return ['a','e','s','a4','b2','b1'][rowIndex];
+      else if (x < 2 * canvas.width / 3) return ['h','d','c','g','t','v'][rowIndex];
+      else return ['m','j','k','l','o','p'][rowIndex];
+    }
+
+    // Touch (mobile)
+    canvas.addEventListener('touchstart', async e => {
+      e.preventDefault();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      if (!isReady || e.touches.length === 0) return;
+      const playedZones = new Set();
+      for (let i = 0; i < e.touches.length; i++) {
+        const touch = e.touches[i];
+        const x = touch.clientX;
+        const y = touch.clientY;
+        const zone = x < canvas.width / 3 ? 'left' : x < 2 * canvas.width / 3 ? 'mid' : 'right';
+        if (playedZones.has(zone)) continue;
+        playedZones.add(zone);
+        const key = getGridKey(x, y);
+        if (!key || !soundMap[key]) continue;
+        playSound(key);
+      }
+    }, { passive: false });
+
+    // Keyboard
+    window.addEventListener('keydown', async e => {
+      if (!isReady) return;
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      const key = e.key.toLowerCase();
+      if (!soundMap[key]) return;
+      playSound(key);
+    });
+
+    window.addEventListener('mousedown', () => {}, { passive: false });
+
+    function drawGridOverlay() {
+      if (!isMobile()) return;
+      const thirds = [canvas.width / 3, 2 * canvas.width / 3];
+      const rows = 6;
+      const cellH = canvas.height / rows;
+      ctx.save();
+      ctx.setLineDash([2, 5]);
+      ctx.strokeStyle = 'rgba(255, 119, 0, 0.4)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      thirds.forEach(x => {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+      });
+      ctx.stroke();
+      ctx.beginPath();
+      for (let i = 1; i < rows; i++) {
+        const y = i * cellH;
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      if (gridLabelOpacity > 0) {
+        const cellLabels = [
+          ['KICK', '808', 'KICK', 'KICK', '808', '808'], // A1–A6
+          ['RIM', 'SNARE', 'SNARE', 'CLAP', 'CLAP', 'SNARE'],
+          ['COWBELL', 'HAT', 'HAT', 'HAT', 'HAT', 'CYMBAL']
+        ];
+        ctx.save();
+        ctx.font = `${Math.floor(canvas.height * 0.038)}px 'Bebas Neue', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = `rgba(255, 119, 0, ${gridLabelOpacity})`;
+        for (let col = 0; col < 3; col++) {
+          for (let row = 0; row < rows; row++) {
+            const x = (col + 0.5) * (canvas.width / 3);
+            const y = (row + 0.5) * cellH;
+            ctx.fillText(cellLabels[col][row], x, y);
+          }
+        }
+        ctx.restore();
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawGridOverlay();
+
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = "#fff";
+      ctx.font = `${Math.floor(canvas.width * 0.9)}px 'Bebas Neue', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText("808", canvas.width / 2, canvas.height / 2);
+
+      if (displayText && opacity > 0) {
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = displayColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.scale(pulse, pulse);
+        ctx.font = `${Math.floor(canvas.height * 0.15)}px 'Bebas Neue', sans-serif`;
+        ctx.fillText(displayText, 0, 0);
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1.0;
+      animFrame = requestAnimationFrame(animate);
+    }
+
+    preloadSounds().then(() => {
+      isReady = true;
+      animate();
+      scheduleGridLabelReward(true);
+    });
+
+  </script>
 </body>
 </html>

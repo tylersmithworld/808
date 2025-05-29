@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>808 Player by Depalma House</title>
+  <title>808 Drum Grid</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; background: black; }
@@ -42,23 +42,14 @@
   <script>
     // --- COLUMN ARRAYS: easiest way to set up grid mapping ---
     const aColKeys = ['a','e','s','a4','b2','b1'];
-    const bColKeys = ['h','d','c','g','b5','v']; // B5 is 'b5'
-    const cColKeys = ['c1','c2','c3','c4','c5','c6']; // new, direct!
+    const bColKeys = ['h','d','c','g','b5','v'];
+    const cColKeys = ['c1','c2','c3','c4','c5','c6'];
 
     // --- SOUND & LABEL MAPS ---
     const soundMap = {
-      // A column
       a: '808 27.mp3', e: '808_110.mp3', s: '808_45.mp3', a4: 'kick14.mp3', b2: '808_81.mp3', b1: '808_89.mp3',
-      // B column
       h: 'rimd.mp3', d:'dfsnr.mp3', c: 'snare_19.mp3', g: 'clap_3.mp3', b5: 'clapd.mp3', v: 'snare_36.mp3',
-      // C column: replace these to test!
-      c1: 'cow_bell_25.mp3', // C1
-      c2: 'hi_hat_7.mp3',    // C2
-      c3: 'hi_hat_2.mp3',    // C3
-      c4: 'revhat.mp3',     // C4
-      c5: 'open_hi.mp3',       // C5
-      c6: 'cymbal_12.mp3',   // C6
-      // extras for keyboard
+      c1: 'cow_bell_25.mp3', c2: 'hi_hat_7.mp3', c3: 'hi_hat_2.mp3', c4: 'revhat.mp3', c5: 'open_hi.mp3', c6: 'cymbal_12.mp3',
       b: 'cow_bell_18.mp3', f: 'snare_23.mp3', j: 'hi_hat_6.mp3', k: 'hi_hat_2.mp3', l: 'hi_hat_7.mp3', t: 'clapd.mp3',
       m: 'cow_bell_25.mp3', n: 'clave_3.mp3', o: 'open_hi_7.mp3', p: 'cymbal_15.mp3',
       i: 'open_hi.mp3', q: '808_42.mp3', r: 'snare_11.mp3', u: 'cymbal_15.mp3',
@@ -144,15 +135,14 @@
       }, delay);
     }
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const audioBuffers = {};
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // ---- PATCH: Robust AudioContext management ----
+    let audioCtx = null;
+    function createAudioCtx() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    createAudioCtx();
+    const audioBuffers = {};
 
     async function loadAudioBuffer(key) {
       const url = `https://tylersmithworld.github.io/808/sounds/${soundMap[key]}`;
@@ -171,6 +161,22 @@
       await Promise.all(Object.keys(soundMap).map(loadAudioBuffer));
       isReady = true;
     }
+
+    async function reloadAllAudioBuffers() {
+      await Promise.all(Object.keys(soundMap).map(loadAudioBuffer));
+      isReady = true;
+    }
+
+    async function ensureAudioCtxActive() {
+      if (!audioCtx) createAudioCtx();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      if (audioCtx.state === "closed") {
+        createAudioCtx();
+        await reloadAllAudioBuffers();
+      }
+    }
+
+    let triedFirstPlay = false;
 
     function playSound(key) {
       if (!audioBuffers[key]) {
@@ -217,11 +223,23 @@
       }, 140);
     }
 
-    // Touch (mobile)
+    // ---- PATCHED: Touch (mobile) ----
     canvas.addEventListener('touchstart', async e => {
       e.preventDefault();
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-      if (!isReady || e.touches.length === 0) return;
+      await ensureAudioCtxActive();
+
+      // If not ready, provide loading feedback (show instantly on first tap)
+      if (!isReady) {
+        if (!triedFirstPlay) {
+          displayText = "LOADING...";
+          displayColor = "#ff7700";
+          opacity = 1;
+          triedFirstPlay = true;
+          setTimeout(() => { opacity = 0; displayText = ""; }, 800);
+        }
+        return;
+      }
+
       const playedZones = new Set();
       for (let i = 0; i < e.touches.length; i++) {
         const touch = e.touches[i];
@@ -236,10 +254,10 @@
       }
     }, { passive: false });
 
-    // Keyboard
+    // ---- PATCHED: Keyboard ----
     window.addEventListener('keydown', async e => {
+      await ensureAudioCtxActive();
       if (!isReady) return;
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
       const key = e.key.toLowerCase();
       if (!soundMap[key]) return;
       playSound(key);
@@ -271,7 +289,7 @@
 
       if (gridLabelOpacity > 0) {
         const cellLabels = [
-          ['KICK', '808', 'KICK', 'KICK', '808', '808'], // A1–A6
+          ['KICK', '808', 'KICK', 'KICK', '808', '808'],
           ['RIM', 'SNARE', 'SNARE', 'CLAP', 'CLAP', 'SNARE'],
           ['COWBELL', 'HAT', 'HAT', 'HAT', 'HAT', 'CYMBAL']
         ];
@@ -290,6 +308,13 @@
         ctx.restore();
       }
     }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);

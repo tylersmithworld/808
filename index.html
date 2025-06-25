@@ -223,36 +223,45 @@
       }, 140);
     }
 
-    // ---- PATCHED: Touch (mobile) ----
-    canvas.addEventListener('touchstart', async e => {
-      e.preventDefault();
-      await ensureAudioCtxActive();
+  // ---- PATCHED: Touch (mobile) ----
+canvas.addEventListener('touchstart', async e => {
+  e.preventDefault();
+  await ensureAudioCtxActive();
 
-      // If not ready, provide loading feedback (show instantly on first tap)
-      if (!isReady) {
-        if (!triedFirstPlay) {
-          displayText = "LOADING...";
-          displayColor = "#ff7700";
-          opacity = 1;
-          triedFirstPlay = true;
-          setTimeout(() => { opacity = 0; displayText = ""; }, 800);
-        }
-        return;
-      }
+  if (!isReady) {
+    if (!triedFirstPlay) {
+      displayText = "LOADING...";
+      displayColor = "#ff7700";
+      opacity = 1;
+      triedFirstPlay = true;
+      setTimeout(() => {
+        opacity = 0;
+        displayText = "";
+      }, 800);
+    }
 
-      const playedZones = new Set();
-      for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        const x = touch.clientX;
-        const y = touch.clientY;
-        const zone = x < canvas.width / 3 ? 'left' : x < 2 * canvas.width / 3 ? 'mid' : 'right';
-        if (playedZones.has(zone)) continue;
-        playedZones.add(zone);
-        const key = getGridKey(x, y);
-        if (!key || !soundMap[key]) continue;
-        playSound(key);
-      }
-    }, { passive: false });
+    // 🚨 Critical fix: ensure sounds are loaded after interaction
+    preloadSounds().then(() => {
+      isReady = true;
+    });
+
+    return;
+  }
+
+  const playedZones = new Set();
+  for (let i = 0; i < e.touches.length; i++) {
+    const touch = e.touches[i];
+    const x = touch.clientX;
+    const y = touch.clientY;
+    const zone = x < canvas.width / 3 ? 'left' : x < 2 * canvas.width / 3 ? 'mid' : 'right';
+    if (playedZones.has(zone)) continue;
+    playedZones.add(zone);
+    const key = getGridKey(x, y);
+    if (!key || !soundMap[key]) continue;
+    playSound(key);
+  }
+}, { passive: false });
+
 
     // ---- PATCHED: Keyboard ----
     window.addEventListener('keydown', async e => {

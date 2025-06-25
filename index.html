@@ -223,11 +223,12 @@
       }, 140);
     }
 
-  // ---- PATCHED: Touch (mobile) ----
+ // ---- RESTORED: Touch (mobile) ----
 canvas.addEventListener('touchstart', async e => {
   e.preventDefault();
   await ensureAudioCtxActive();
 
+  // If not ready, provide loading feedback (show instantly on first tap)
   if (!isReady) {
     if (!triedFirstPlay) {
       displayText = "LOADING...";
@@ -239,12 +240,6 @@ canvas.addEventListener('touchstart', async e => {
         displayText = "";
       }, 800);
     }
-
-    // 🚨 Critical fix: ensure sounds are loaded after interaction
-    preloadSounds().then(() => {
-      isReady = true;
-    });
-
     return;
   }
 
@@ -261,7 +256,6 @@ canvas.addEventListener('touchstart', async e => {
     playSound(key);
   }
 }, { passive: false });
-
 
     // ---- PATCHED: Keyboard ----
     window.addEventListener('keydown', async e => {
